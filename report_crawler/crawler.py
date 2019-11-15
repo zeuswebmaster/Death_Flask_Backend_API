@@ -1,5 +1,4 @@
 import asyncio
-import urllib
 
 from aiohttp import ClientSession, BasicAuth
 
@@ -32,7 +31,7 @@ async def get_report(username, password):
                                f'pdt={pdt}&'
                                'xsl=CC2CONSUMERDIRECT_3BREPORTVANTAGE3SCORE_JS',
                                auth=ba) as response:
-            print(await response.text())
+            print((await response.text())[:1000])
 
 
 async def test():
