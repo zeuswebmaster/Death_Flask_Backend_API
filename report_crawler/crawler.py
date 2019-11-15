@@ -1,6 +1,7 @@
 import asyncio
-
 from aiohttp import ClientSession, BasicAuth
+
+from bs4 import BeautifulSoup as BS4
 
 
 async def get_report(username, password):
@@ -31,7 +32,7 @@ async def get_report(username, password):
                                f'pdt={pdt}&'
                                'xsl=CC2CONSUMERDIRECT_3BREPORTVANTAGE3SCORE_JS',
                                auth=ba) as response:
-            print((await response.text())[:1000])
+            soup = BS4((await response.text()), 'html.parser')
 
 
 async def test():
