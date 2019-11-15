@@ -35,7 +35,13 @@ async def get_report(username, password):
             soup = BS4((await response.text()), 'html.parser')
 
 
+def scrap_table(html):
+    soup = BS4(html, 'html.parser')
+    print(len(soup.findAll('p')))
+
+
 async def test():
-    await get_report('test1@consumerdirect.com', '12345678')
+    with open('smc.html', 'r', encoding='latin-1') as file:
+        scrap_table(file)
 
 asyncio.get_event_loop().run_until_complete(test())
