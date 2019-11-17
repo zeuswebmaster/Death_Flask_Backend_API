@@ -35,13 +35,49 @@ async def get_report(username, password):
             soup = BS4((await response.text()), 'html.parser')
 
 
+"""
+debt_name       <td class="crWhiteTradelineHeader"><b>JPMCB CARD</b></td>
+creditor        same as debt_name
+type            7+ types of loans
+ecoa            <td class="accountHistoryColorRow">Individual</td>
+account_number  <td>585637245464**** 
+push            NO
+last_collector 
+"""
+
+
 def scrap_table(html):
     soup = BS4(html, 'html.parser')
-    print(len(soup.findAll('p')))
+    tables = soup.findAll('table', attrs={'border': '1',
+                                          'cellspacing': '0',
+                                          'cellpadding': '0',
+                                          'xmlns:d1p1': 'com/truelink/ds/sch/report/truelink/v3',
+                                          'bordercolor': '#eeeeee'})
+    for table in tables:
+        crwtlh = table.findAll('td', {'class': 'crWhiteTradelineHeader'})
+        if len(crwtlh) == 3:
+            row = dict()
+            print('============================================================')
+            row['debt_name'] = row['creditor'] = crwtlh[1].text
+            row['push'] = 'No'
+            for tr in table.find('table', {'class': 'crLightTableBackground'}).findAll('tr'):
+                tds = tr.findAll('td')
+                b = tds[0].find('b')
+                if b:
+                    print(tds[0].find('b').string)
+                    for td in tds[1:]:
+                        if '--' not in td.string:
+                            if b.string == 'Account #:':
+                                row['account_number'] = td.string.strip()
+                            print(td.string.strip())
+
+            print()
+    print(len(tables))
 
 
 async def test():
-    with open('smc.html', 'r', encoding='latin-1') as file:
+    with open('smc1.html', 'r', encoding='latin-1') as file:
         scrap_table(file)
+
 
 asyncio.get_event_loop().run_until_complete(test())
