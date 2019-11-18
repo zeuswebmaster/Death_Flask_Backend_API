@@ -43,6 +43,10 @@ ecoa            <td class="accountHistoryColorRow">Individual</td>
 account_number  <td>585637245464**** 
 push            NO
 last_collector 
+collector_account
+last_debt_status
+bureaus
+balance_original
 """
 
 
@@ -69,9 +73,13 @@ def scrap_table(html):
                         if '--' not in td.string:
                             if b.string == 'Account #:':
                                 row['account_number'] = td.string.strip()
+                            elif b.string == 'Creditor Type:':
+                                row['type'] = td.string.strip()
+                            elif b.string == 'Account Description:':
+                                row['ecoa'] = td.string.strip()
                             print(td.string.strip())
 
-            print()
+            print(row)
     print(len(tables))
 
 
