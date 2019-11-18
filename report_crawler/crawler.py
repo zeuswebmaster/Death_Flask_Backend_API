@@ -77,6 +77,8 @@ def scrap_table(html):
                                 row['type'] = td.string.strip()
                             elif b.string == 'Account Description:':
                                 row['ecoa'] = td.string.strip()
+                            elif b.string == 'Payment Amount:':
+                                row['payment_amount'] = td.string.strip()
                             print(td.string.strip())
 
             print(row)
