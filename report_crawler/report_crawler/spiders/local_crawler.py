@@ -48,5 +48,5 @@ class Crawler(scrapy.Spider):
         columns = ', '.join(row.keys())
         placeholders = ', '.join('?' * len(row))
         self.log("INSERT INTO reports ({}) VALUES ({})".format(columns, placeholders))
-        self.cursor.execute("INSERT INTO reports ({}) VALUES ({})".format(columns, placeholders), (row.values()))
+        self.cursor.execute("INSERT INTO reports ({}) VALUES ({})".format(columns, placeholders), tuple(row.values()))
         self.connection.commit()
