@@ -24,7 +24,10 @@ class Crawler(scrapy.Spider):
         )
 
     def goto_report(self, response):
-        yield SplashRequest(url=self.report_url, callback=self.parse_report, args={'wait': 10})
+        yield SplashRequest(url=self.report_url, endpoint='execute', callback=self.parse_report, args={
+                                    'html': 1,
+                                    'wait': 10,
+                                })
 
     def parse_report(self, response):
         # tables = response.xpath("//div[@id='TokenDisplay']//td[@class='crWhiteTradelineHeader']/ancestor::table[2]").extract()
