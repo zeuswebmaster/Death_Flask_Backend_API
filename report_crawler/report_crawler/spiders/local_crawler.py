@@ -1,6 +1,7 @@
 import datetime
 import sqlite3
 import geopy
+import pdfkit
 
 import scrapy
 
@@ -21,6 +22,7 @@ class Crawler(scrapy.Spider):
         self.log('Tables:')
         # self.log(tables)
         self.log(f'Length: {len(tables)}')
+
         for table in tables:
             row = dict()
             row['debt_name'] = row['creditor'] = table.xpath("./descendant::b/text()").get()
@@ -39,14 +41,15 @@ class Crawler(scrapy.Spider):
                 row['days_delinquent'] = 30
             else:
                 row['days_delinquent'] = ''  # set for collection/chargeoff
-            self.log(row['days_delinquent'])
             row['balance_original'] = ''
             row['payment_amount'] = float(self.get_cell(table, "./descendant::b[contains(text(), 'Payment Amount')]/ancestor::tr[@class='crTableHeader']/td[{}]/text()", [2, 3, 4]).replace('$', ''))
             row['last_update'] = datetime.datetime.now()
             # row['graduation'] = self.get_cell(table, "./descendant::b[contains(text(), 'Account Description')]/ancestor::tr[@class='crLightTableBackground']/td[{}]/text()", [2, 3, 4])
             # self.log('Graduation: ', row['graduation'])
             self.insert_row(row)
-            # self.log(row)
+            self.log(row)
+        pdfkit.from_string(response.text,
+                           'report.pdf')
 
     def get_cell(self, table_el, row_xpath, params):
         for param in params:
