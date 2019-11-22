@@ -6,6 +6,13 @@ import pdfkit
 import scrapy
 
 
+def normalize(string: str):
+    if string:
+        if '.' in string:
+            return float(string.replace('$', '').replace(',', ''))
+        return int(string.replace('$', '').replace(',', ''))
+
+
 class Crawler(scrapy.Spider):
     name = 'local_reports'
     connection = sqlite3.connect('./reports.db')
@@ -41,8 +48,9 @@ class Crawler(scrapy.Spider):
                 row['days_delinquent'] = 30
             else:
                 row['days_delinquent'] = ''  # set for collection/chargeoff
-            row['balance_original'] = ''
-            row['payment_amount'] = float(self.get_cell(table, "./descendant::b[contains(text(), 'Payment Amount')]/ancestor::tr[@class='crTableHeader']/td[{}]/text()", [2, 3, 4]).replace('$', ''))
+            row['balance_original'] = normalize(self.get_cell(table, "./descendant::b[contains(text(), 'Balance Owed')]/ancestor::tr[@class='crLightTableBackground']/td[{}]/text()", [2, 3, 4]))
+            row['payment_amount'] = normalize(self.get_cell(table, "./descendant::b[contains(text(), 'Payment Amount')]/ancestor::tr[@class='crTableHeader']/td[{}]/text()", [2, 3, 4]))
+            row['credit_limit'] = normalize(self.get_cell(table, "./descendant::b[contains(text(), 'Credit Limit')]/ancestor::tr[@class='crTableHeader']/td[{}]/text()", [2, 3, 4]))
             row['last_update'] = datetime.datetime.now()
             # row['graduation'] = self.get_cell(table, "./descendant::b[contains(text(), 'Account Description')]/ancestor::tr[@class='crLightTableBackground']/td[{}]/text()", [2, 3, 4])
             # self.log('Graduation: ', row['graduation'])

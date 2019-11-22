@@ -73,7 +73,7 @@ class Crawler(scrapy.Spider):
                 row['days_delinquent'] = 30
             else:
                 row['days_delinquent'] = ''  # set for collection/chargeoff
-            row['balance_original'] = ''
+            row['balance_original'] = self.get_cell(table, "./descendant::b[contains(text(), 'Balance owed')]/ancestor::tr[@class='crLightTableBackground']/td[{}]/text()", [2, 3, 4])
             row['payment_amount'] = float(self.get_cell(table,
                                                         "./descendant::b[contains(text(), 'Payment Amount')]/ancestor::tr[@class='crTableHeader']/td[{}]/text()",
                                                         [2, 3, 4]).replace('$', ''))
