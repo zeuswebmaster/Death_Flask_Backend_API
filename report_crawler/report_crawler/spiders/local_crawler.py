@@ -1,6 +1,7 @@
-import datetime
+from datetime import datetime
+from datetime import timedelta
+
 import sqlite3
-import geopy
 import pdfkit
 
 import scrapy
@@ -13,6 +14,19 @@ def normalize(string: str):
         return int(string.replace('$', '').replace(',', ''))
 
 
+def get_limitations(address: str) -> int:
+    state = ''.join(letter for letter in address if letter.isalpha()).strip()
+    if len(state) == 2:
+        limitation_dict = {
+            'AL': 6, 'AK': 3, 'AZ': 6, 'AR': 5, 'CA': 4, 'CO': 6, 'CT': 6, 'DE': 3, 'FL': 5, 'GA': 6, 'HI': 6, 'ID': 5,
+            'IL': 10, 'IN': 6, 'IA': 10, 'KS': 5, 'KY': 10, 'LA': 10, 'ME': 6, 'MD': 3, 'MA': 6, 'MI': 6, 'MN': 6,
+            'MS': 3, 'MO': 10, 'MT': 8, 'NE': 5, 'NV': 6, 'NH': 3, 'NJ': 6, 'NM': 6, 'NY': 6, 'NC': 3, 'ND': 6, 'OH': 8,
+            'OK': 5, 'OR': 6, 'PA': 4, 'RI': 10, 'SC': 3, 'SD': 6, 'TN': 6, 'TX': 4, 'UT': 6, 'VT': 6, 'VA': 5, 'WA': 6,
+            'WV': 10, 'WI': 6, 'WY': 10
+        }
+        return limitation_dict.get(state.upper())
+
+
 class Crawler(scrapy.Spider):
     name = 'local_reports'
     connection = sqlite3.connect('./reports.db')
@@ -21,15 +35,19 @@ class Crawler(scrapy.Spider):
 
     def parse(self, response):
         self.cursor.execute("""CREATE TABLE reports (debt_name, creditor, account_type, ecoa, account_number, push,
-                        last_collector, collector_account, last_debt_status, bureaus, days_delinquent, balance_original, payment_amount,
-                        credit_limit, graduation, last_update)""")
+                        last_collector, collector_account, last_debt_status, bureaus, days_delinquent, balance_original,
+                        payment_amount, credit_limit, graduation, last_update)""")
         self.connection.commit()
 
         tables = response.xpath("""//div[@id='TokenDisplay']//td[@class='crWhiteTradelineHeader']/ancestor::table[2]""")
         self.log('Tables:')
-        # self.log(tables)
         self.log(f'Length: {len(tables)}')
 
+        address = response.xpath("""//div[@id='TokenDisplay']//table[6]//tr[@class='crTradelineHeader']//td[2]//span[@class='Rsmall']/text()"""
+                                 ).extract()[-1].replace('\r', ' ').replace('\t', '').replace('\n', '')
+        if ',' in address:
+            address = address.split(',')[1]
+        limitation = get_limitations(address)
         for table in tables:
             row = dict()
             row['debt_name'] = row['creditor'] = table.xpath("./descendant::b/text()").get()
@@ -51,9 +69,12 @@ class Crawler(scrapy.Spider):
             row['balance_original'] = normalize(self.get_cell(table, "./descendant::b[contains(text(), 'Balance Owed')]/ancestor::tr[@class='crLightTableBackground']/td[{}]/text()", [2, 3, 4]))
             row['payment_amount'] = normalize(self.get_cell(table, "./descendant::b[contains(text(), 'Payment Amount')]/ancestor::tr[@class='crTableHeader']/td[{}]/text()", [2, 3, 4]))
             row['credit_limit'] = normalize(self.get_cell(table, "./descendant::b[contains(text(), 'Credit Limit')]/ancestor::tr[@class='crTableHeader']/td[{}]/text()", [2, 3, 4]))
-            row['last_update'] = datetime.datetime.now()
-            # row['graduation'] = self.get_cell(table, "./descendant::b[contains(text(), 'Account Description')]/ancestor::tr[@class='crLightTableBackground']/td[{}]/text()", [2, 3, 4])
-            # self.log('Graduation: ', row['graduation'])
+            last_payment = self.get_cell(table, "./descendant::b[contains(text(), 'Last Payment')]/ancestor::tr[@class='crLightTableBackground']/td[{}]/text()", [2, 3, 4])
+            row['graduation'] = None
+            if last_payment:
+                if limitation:
+                    row['graduation'] = datetime.strptime(last_payment, '%m/%d/%Y') + timedelta(days=360*limitation)
+            row['last_update'] = datetime.now()
             self.insert_row(row)
             self.log(row)
         pdfkit.from_string(response.text,
