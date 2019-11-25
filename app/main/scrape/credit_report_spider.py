@@ -127,6 +127,7 @@ class CreditReportSpider(scrapy.Spider):
         tables = response.xpath(
             '//table[@border="1" and '
             './/table[@class="crLightTableBackground"]]')
+        scraped_data = list()
         for table in tables:
             debt_name = creditor = table.xpath(
                 './/td[@class="crWhiteTradelineHeader"]/b/text()')[0]
@@ -192,7 +193,7 @@ class CreditReportSpider(scrapy.Spider):
                 graduation = datetime.strptime(last_payment, '%m/%d/%Y') +\
                     timedelta(days=360 * limitation)
 
-            last_update = datetime.now()
+            last_update = datetime.utcnow()
 
             report_data = CreditReportData(
                 candidate_id=self.candidate_id,
@@ -209,20 +210,36 @@ class CreditReportSpider(scrapy.Spider):
                 graduation=graduation,
                 last_update=last_update
                 )
-            db.session.add(report_data)
-        db.session.commit()
+            scraped_data.append(report_data)
+
+        self.remove_old_data()
+        self.update_new_data(scraped_data)
+        self.mark_complete()
+
         # ------ FOR PDF Converson -----------
-        # pdfkit.from_string(converted_data,
-        #                    'report.pdf')
+        pdfkit.from_string(
+            converted_data.replace('\xa0', '').replace('®', ''), 'report.pdf')
 
-
-def mark_complete(candidate_id):
-    task = ScrapeTask.query.filter_by(
-        candidate_id=candidate_id).first()
-    if task:
-        setattr(task, 'complete', True)
-        db.session.add(task)
+    def remove_old_data(self,):
+        existing_data = CreditReportData.query.filter_by(
+            candidate_id=self.candidate_id).all()
+        for d in existing_data:
+            db.session.delete(d)
         db.session.commit()
+
+    def update_new_data(self, scraped_data):
+        for d in scraped_data:
+            db.session.add(d)
+        db.session.commit()
+
+    def mark_complete(self,):
+        task = ScrapeTask.query.filter_by(
+            candidate_id=self.candidate_id, complete=False).first()
+        if task:
+            setattr(task, 'complete', True)
+            setattr(task, 'updated_on', datetime.utcnow())
+            db.session.add(task)
+            db.session.commit()
 
 
 def run(*args):
@@ -236,7 +253,6 @@ def run(*args):
     process = CrawlerProcess(settings)
     process.crawl(CreditReportSpider, candidate_id, user, password)
     process.start()
-    mark_complete(candidate_id)
 
 
 if __name__ == '__main__':

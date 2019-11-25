@@ -5,6 +5,21 @@ from app.main.model.candidate import Candidate
 from app.main.model.credit_report_account import CreditReportAccount, CreditReportSignupStatus, CreditReportData
 
 
+def check_existing_scrape_task(candidate_id):
+    task = ScrapeTask.query.filter_by(candidate_id=candidate_id, complete=False).first()
+    print(task)
+
+    if not task:
+        return False, None
+
+    response_object = {
+        'success': False,
+        'message': 'Existing fetch ongoing for this candidate'
+    }
+    return True, (response_object, 500)
+    
+
+
 def get_report_data(candidate_public_id):
     data = CreditReportData.query.filter_by(candidate_id=candidate_public_id).all()
     return data

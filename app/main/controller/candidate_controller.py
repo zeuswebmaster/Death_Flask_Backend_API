@@ -10,8 +10,11 @@ from app.main.model.credit_report_account import CreditReportSignupStatus, Credi
 from app.main.service.auth_helper import Auth
 from app.main.service.candidate_service import save_new_candidate_import, save_changes, get_all_candidate_imports, \
     get_candidate, get_all_candidates, update_candidate
-from app.main.service.credit_report_account_service import save_new_credit_report_account,\
-    update_credit_report_account, get_report_data
+
+from app.main.service.credit_report_account_service import\
+    save_new_credit_report_account, update_credit_report_account,\
+    get_report_data, check_existing_scrape_task
+
 from app.main.service.smartcredit_service import start_signup, LockedException, create_customer, \
     get_id_verification_question, answer_id_verification_questions, update_customer, does_email_exist, \
     complete_credit_account_signup
@@ -126,6 +129,7 @@ def _handle_get_candidate(candidate_public_id):
 
 def _handle_get_credit_report(candidate, account_public_id):
     account = candidate.credit_report_account
+    return account, None
     if not account or account.public_id != account_public_id:
         response_object = {
             'success': False,
@@ -395,18 +399,21 @@ class CompleteCreditReportAccount(Resource):
             return response_object, 500
 
 
-@api.route('/<public_id>/credit-report/run_spider')
+@api.route('/<public_id>/credit-report/debts')
 @api.param('public_id', 'The Candidate Identifier')
-class ScrapeCreditReportAccount(Resource):
-    @api.doc('scrape credit report')
+class CreditReportDebts(Resource):
+    @api.doc('fetch credit report data')
     def put(self, public_id):
-        """ Scrape Credit Report """
+        """ Fetch Credit Report Data"""
         try:
             candidate, error_response = _handle_get_candidate(public_id)
             if not candidate:
                 api.abort(404, **error_response)
             account, error_response = _handle_get_credit_report(candidate, public_id)
             if not account:
+                return error_response
+            exists, error_response = check_existing_scrape_task(public_id)
+            if exists:
                 return error_response
 
             # --------Need to update this email---------
@@ -440,11 +447,7 @@ class ScrapeCreditReportAccount(Resource):
             }
             return response_object, 500
 
-
-@api.route('/<public_id>/credit-report/report_data')
-@api.param('public_id', 'The Candidate Identifier')
-class ScrapeCreditReportData(Resource):
-    @api.doc('View credit report data')
+    @api.doc('view credit report data')
     @api.marshal_list_with(_credit_report_data, envelope='data')
     def get(self, public_id):
         """View Credit Report Data"""
