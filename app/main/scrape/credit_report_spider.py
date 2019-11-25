@@ -1,3 +1,4 @@
+import os
 import re
 import uuid
 import sqlite3
@@ -16,6 +17,8 @@ from app.main.model.task import ScrapeTask
 
 
 DAYS_DELINQUENT_PATTERN = re.compile(r' (\d+)')
+REPORT_PATH = 'report.pdf'
+CSS_FOLDER = 'report_css'
 
 
 def normalize(string: str):
@@ -50,6 +53,7 @@ class CreditReportSpider(scrapy.Spider):
             current_app.config['SMART_CREDIT_HTTP_USER'],
             current_app.config['SMART_CREDIT_HTTP_PASS']
         )
+        self.set_css()
         self.headers = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,'
                       'image/webp,image/apng,*/*;q=0.8,'
@@ -70,6 +74,13 @@ class CreditReportSpider(scrapy.Spider):
                           'AppleWebKit/537.36 (KHTML, like Gecko) '
                           'Chrome/78.0.3904.97 Safari/537.36'
         }
+
+    def set_css(self,):
+        basedir = os.path.abspath(os.path.dirname(__file__))
+        css_path = os.path.join(basedir, CSS_FOLDER)
+        self.css = [
+            os.path.join(css_path, f) for f in os.listdir(css_path)
+            if os.path.isfile(os.path.join(css_path, f))]
 
     def start_requests(self):
         yield scrapy.Request(
@@ -218,7 +229,10 @@ class CreditReportSpider(scrapy.Spider):
 
         # ------ FOR PDF Converson -----------
         pdfkit.from_string(
-            converted_data.replace('\xa0', '').replace('®', ''), 'report.pdf')
+            converted_data.replace('\xa0', '').replace('®', ''),
+            REPORT_PATH,
+            css=self.css
+        )
 
     def remove_old_data(self,):
         existing_data = CreditReportData.query.filter_by(

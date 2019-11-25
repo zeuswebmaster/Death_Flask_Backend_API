@@ -2,12 +2,13 @@ import uuid
 
 from app.main import db
 from app.main.model.candidate import Candidate
-from app.main.model.credit_report_account import CreditReportAccount, CreditReportSignupStatus, CreditReportData
+from app.main.model.credit_report_account import CreditReportAccount,\
+    CreditReportSignupStatus, CreditReportData
+from app.main.model.task import ScrapeTask
 
 
 def check_existing_scrape_task(candidate_id):
     task = ScrapeTask.query.filter_by(candidate_id=candidate_id, complete=False).first()
-    print(task)
 
     if not task:
         return False, None
