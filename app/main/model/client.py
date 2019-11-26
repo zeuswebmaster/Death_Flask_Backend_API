@@ -35,6 +35,9 @@ class Client(db.Model):
     type = db.Column(db.Enum(ClientType), nullable=False, default=ClientType.lead)
     public_id = db.Column(db.String(100), unique=True)
 
+    # relationships
+    credit_report_account = db.relationship('CreditReportAccount', uselist=False, backref='client')
+
     # def __hash__(self):
     #     return hash(self.first_name, self.last_name, self.address, self.city, self.zip)
     #

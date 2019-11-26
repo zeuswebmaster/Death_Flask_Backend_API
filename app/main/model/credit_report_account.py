@@ -28,6 +28,7 @@ class CreditReportAccount(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     candidate_id = db.Column(db.Integer, db.ForeignKey('candidates.id'))
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id', name='fk_client'))
     public_id = db.Column(db.String(100), unique=True)
     provider = db.Column(db.String(50), nullable=False, default='Smart Credit')
     customer_token = db.Column(db.String(), unique=True, nullable=True)
