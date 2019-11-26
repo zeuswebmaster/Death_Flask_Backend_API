@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 
 from app.main.config import upload_location
 from app.main.model.candidate import CandidateImport
+from app.main.model.client import ClientType
 from app.main.model.credit_report_account import CreditReportSignupStatus, CreditReportData
 from app.main.service.auth_helper import Auth
 from app.main.service.candidate_service import save_new_candidate_import, save_changes, get_all_candidate_imports, \
@@ -129,7 +130,7 @@ def _handle_get_candidate(candidate_public_id):
 
 def _handle_get_credit_report(candidate, account_public_id):
     account = candidate.credit_report_account
-    return account, None
+    # return account, None
     if not account or account.public_id != account_public_id:
         response_object = {
             'success': False,
@@ -185,6 +186,7 @@ class CreateCreditReportAccount(Resource):
             new_customer = create_customer(request_data, credit_report_account.tracking_token, sponsor_code='BTX5DY2SZK')
 
             credit_report_account.password = password
+            credit_report_account.email = request_data.get('email')
             credit_report_account.customer_token = new_customer.get('customerToken')
             credit_report_account.financial_obligation_met = new_customer.get('isFinancialObligationMet')
             credit_report_account.plan_type = new_customer.get('planType')
@@ -412,17 +414,13 @@ class CreditReportDebts(Resource):
             account, error_response = _handle_get_credit_report(candidate, public_id)
             if not account:
                 return error_response
-            exists, error_response = check_existing_scrape_task(public_id)
+            exists, error_response = check_existing_scrape_task(account)
             if exists:
                 return error_response
 
-            # --------Need to update this email---------
-            email = 'test1@consumerdirect.com'
             task = CreditReportData().launch_spider(
-                'run',
-                'Scrapes credit report for given candidate',
-                public_id,
-                candidate.email,
+                account.id,
+                account.email,
                 current_app.cipher.decrypt(
                     account.password).decode()
             )
@@ -451,5 +449,8 @@ class CreditReportDebts(Resource):
     @api.marshal_list_with(_credit_report_data, envelope='data')
     def get(self, public_id):
         """View Credit Report Data"""
-        data = get_report_data(public_id)
+        candidate, error_response = _handle_get_candidate(public_id)
+        if not candidate:
+            api.abort(404, **error_response)
+        data = get_report_data(candidate.credit_report_account)
         return data, 200

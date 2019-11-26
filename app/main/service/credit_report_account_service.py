@@ -2,13 +2,15 @@ import uuid
 
 from app.main import db
 from app.main.model.candidate import Candidate
+from app.main.model.client import ClientType
 from app.main.model.credit_report_account import CreditReportAccount,\
     CreditReportSignupStatus, CreditReportData
 from app.main.model.task import ScrapeTask
 
 
-def check_existing_scrape_task(candidate_id):
-    task = ScrapeTask.query.filter_by(candidate_id=candidate_id, complete=False).first()
+def check_existing_scrape_task(account):
+    task = ScrapeTask.query.filter_by(
+        account_id=account.id, complete=False).first()
 
     if not task:
         return False, None
@@ -18,12 +20,12 @@ def check_existing_scrape_task(candidate_id):
         'message': 'Existing fetch ongoing for this candidate'
     }
     return True, (response_object, 500)
-    
 
 
-def get_report_data(candidate_public_id):
-    data = CreditReportData.query.filter_by(candidate_id=candidate_public_id).all()
-    return data
+def get_report_data(account):
+    if not account:
+        return []
+    return CreditReportData.query.filter_by(account_id=account.id).all()
 
 
 def save_new_credit_report_account(data, candidate: Candidate, status: CreditReportSignupStatus = None):

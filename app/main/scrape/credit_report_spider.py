@@ -45,8 +45,8 @@ class CreditReportSpider(scrapy.Spider):
     name = 'credit_report_spider'
     allowed_domains = ["consumerdirect.com", "cc2-live.sd.demo.truelink.com"]
 
-    def __init__(self, candidate_id, user, password):
-        self.candidate_id, self.username, self.password = candidate_id, user, password
+    def __init__(self, *args):
+        self.account_id, self.username, self.password = args
         self.report_url = 'https://stage-sc.consumerdirect.com/member/credit-report/3b/'
         self.login_url = 'https://stage-sc.consumerdirect.com/login/'
         self.auth = basic_auth_header(
@@ -207,7 +207,7 @@ class CreditReportSpider(scrapy.Spider):
             last_update = datetime.utcnow()
 
             report_data = CreditReportData(
-                candidate_id=self.candidate_id,
+                account_id=self.account_id,
                 public_id=str(uuid.uuid4()),
                 debt_name=debt_name,
                 creditor=creditor,
@@ -228,15 +228,17 @@ class CreditReportSpider(scrapy.Spider):
         self.mark_complete()
 
         # ------ FOR PDF Converson -----------
+        basedir = os.path.abspath(os.path.dirname(__file__))
+        report_path = os.path.join(basedir, REPORT_PATH)
         pdfkit.from_string(
             converted_data.replace('\xa0', '').replace('®', ''),
-            REPORT_PATH,
+            report_path,
             css=self.css
         )
 
     def remove_old_data(self,):
         existing_data = CreditReportData.query.filter_by(
-            candidate_id=self.candidate_id).all()
+            account_id=self.account_id).all()
         for d in existing_data:
             db.session.delete(d)
         db.session.commit()
@@ -248,7 +250,7 @@ class CreditReportSpider(scrapy.Spider):
 
     def mark_complete(self,):
         task = ScrapeTask.query.filter_by(
-            candidate_id=self.candidate_id, complete=False).first()
+            account_id=self.account_id, complete=False).first()
         if task:
             setattr(task, 'complete', True)
             setattr(task, 'updated_on', datetime.utcnow())
@@ -263,9 +265,8 @@ def run(*args):
         'RETRY_HTTP_CODES': [403, 405, 429, 500, 503],
         'RETRY_TIMES': 2,
     }
-    candidate_id, user, password = args
     process = CrawlerProcess(settings)
-    process.crawl(CreditReportSpider, candidate_id, user, password)
+    process.crawl(CreditReportSpider, *args)
     process.start()
 
 

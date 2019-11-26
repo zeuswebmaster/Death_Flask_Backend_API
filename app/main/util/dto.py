@@ -140,6 +140,16 @@ class LeadDto:
     lead = api.model('lead', {
         'first_name': fields.String(required=True, description='lead first name'),
         'last_name': fields.String(required=True, description='lead last name'),
+        'address': fields.String(required=True, description='client address'),
+        'city': fields.String(required=True, description='client city'),
+        'state': fields.String(required=True, description='client state'),
+        'zip': fields.String(required=True, description='client zip'),
+        'zip4': fields.String(required=True, description='client zip4'),
+        'crrt': fields.String(required=True, description='client crrt'),
+        'dpbc': fields.Integer(required=True, description='client dpbc'),
+        'fips': fields.Integer(required=True, description='client fips'),
+        'estimated_debt': fields.Integer(required=True, description='client estimated_debt'),
+        'county': fields.String(required=True, description='client county'),
         'email': fields.String(required=True, description='lead email address'),
         'language': fields.String(required=True, description='lead language preference'),
         'phone': fields.String(required=True, description='lead phone number'),
@@ -263,7 +273,6 @@ class CandidateDto:
     })
     credit_report_data = api.model('credit_report_account', {
         'public_id': fields.String(),
-        'candidate_id': fields.String(),
         'debt_name': fields.String(),
         'creditor': fields.String(),
         'ecoa': fields.String(),
