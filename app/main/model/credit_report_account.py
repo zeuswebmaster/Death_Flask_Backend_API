@@ -1,6 +1,8 @@
 import enum
 from flask import current_app
 import datetime
+from sqlalchemy import UniqueConstraint
+
 from app.main import db
 from app.main.model.task import ScrapeTask
 
@@ -32,9 +34,12 @@ class CreditReportAccount(db.Model):
     tracking_token = db.Column(db.String(100), nullable=False)
     plan_type = db.Column(db.String(50), nullable=True)
     financial_obligation_met = db.Column(db.Boolean, nullable=True)
+    email = db.Column(db.String(255), nullable=False)
     _password_enc = db.Column('password_enc', db.String(128), nullable=True)
     status = db.Column(db.Enum(CreditReportSignupStatus), nullable=False,
                        default=CreditReportSignupStatus.INITIATING_SIGNUP)
+    __table_args__ = (UniqueConstraint('email', name='_email_uc'),
+                      )
 
     @property
     def password(self):
