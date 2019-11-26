@@ -37,8 +37,7 @@ class ScrapeTask(db.Model):
 
     id = db.Column(db.String(36), primary_key=True)
     name = db.Column(db.String(128), index=True)
-    description = db.Column(db.String(128))
-    candidate_id = db.Column(db.Integer, db.ForeignKey('candidates.id'))
+    account_id = db.Column(db.Integer, db.ForeignKey('credit_report_accounts.id'))
     inserted_on = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
     updated_on = db.Column(db.DateTime, nullable=True)
     complete = db.Column(db.Boolean, default=False)
