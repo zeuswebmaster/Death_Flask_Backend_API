@@ -13,25 +13,20 @@ class CreditReportSignupStatus(enum.Enum):
     FULL_MEMBER = 'full_member'
 
 
-class CreditReportSpiderStatus(enum.Enum):
-    CREATED = 'created'
-    RUNNING = 'running'
-    COMPLETED = 'completed'
-    ERROR = 'error'
-
-
 class CreditReportAccount(db.Model):
     """ User Model for storing user related details """
     __tablename__ = "credit_report_accounts"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     candidate_id = db.Column(db.Integer, db.ForeignKey('candidates.id'))
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'))
     public_id = db.Column(db.String(100), unique=True)
     provider = db.Column(db.String(50), nullable=False, default='Smart Credit')
     customer_token = db.Column(db.String(), unique=True, nullable=True)
     tracking_token = db.Column(db.String(100), nullable=False)
     plan_type = db.Column(db.String(50), nullable=True)
     financial_obligation_met = db.Column(db.Boolean, nullable=True)
+    email = db.Column(db.String(255), unique=True)
     _password_enc = db.Column('password_enc', db.String(128), nullable=True)
     status = db.Column(db.Enum(CreditReportSignupStatus), nullable=False,
                        default=CreditReportSignupStatus.INITIATING_SIGNUP)
@@ -49,7 +44,7 @@ class CreditReportData(db.Model):
     """ Db Model for storing candidate report data """
     __tablename__ = "credit_report_data"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    candidate_id = db.Column(db.Integer, db.ForeignKey('candidates.id'))
+    account_id = db.Column(db.Integer, db.ForeignKey('credit_report_accounts.id'))
     public_id = db.Column(db.String(100), unique=True)
     debt_name = db.Column(db.String(100), nullable=True)
     creditor = db.Column(db.String(100), nullable=True)
