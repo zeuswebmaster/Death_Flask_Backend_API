@@ -1,0 +1,18 @@
+.DS_Store
+.idea
+poc
+
+.env*
+*.db
+*.txt.lock
+**/__pycache__/**
+*.csv
+
+*.py[co]
+*.egg-info
+
+# C extensions
+*.so
+
+*.log
+*.log.*
