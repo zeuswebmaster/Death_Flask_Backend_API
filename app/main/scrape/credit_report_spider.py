@@ -80,7 +80,9 @@ class CreditReportSpider(scrapy.Spider):
         css_path = os.path.join(basedir, CSS_FOLDER)
         self.css = [
             os.path.join(css_path, f) for f in os.listdir(css_path)
-            if os.path.isfile(os.path.join(css_path, f))]
+            if os.path.isfile(os.path.join(css_path, f))
+            and f.endswith('.css')
+        ]
 
     def start_requests(self):
         yield scrapy.Request(

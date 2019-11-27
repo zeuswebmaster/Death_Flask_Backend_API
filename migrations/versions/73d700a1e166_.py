@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 82e0ae6731d6
+Revision ID: 73d700a1e166
 Revises: a05ed97bab59
-Create Date: 2019-11-27 21:25:18.259817
+Create Date: 2019-11-27 22:46:49.202009
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '82e0ae6731d6'
+revision = '73d700a1e166'
 down_revision = 'a05ed97bab59'
 branch_labels = None
 depends_on = None
@@ -33,7 +33,7 @@ def upgrade():
     with op.batch_alter_table('scrape_tasks', schema=None) as batch_op:
         batch_op.add_column(sa.Column('account_id', sa.Integer(), nullable=True))
         # batch_op.drop_constraint(None, type_='foreignkey')
-        batch_op.create_foreign_key('fk_credit_report_data', 'credit_report_accounts', ['account_id'], ['id'])
+        batch_op.create_foreign_key('fk_scrape_tasks', 'credit_report_accounts', ['account_id'], ['id'])
         batch_op.drop_column('description')
         batch_op.drop_column('candidate_id')
 
@@ -45,7 +45,7 @@ def downgrade():
     with op.batch_alter_table('scrape_tasks', schema=None) as batch_op:
         batch_op.add_column(sa.Column('candidate_id', sa.INTEGER(), nullable=True))
         batch_op.add_column(sa.Column('description', sa.VARCHAR(length=128), nullable=True))
-        batch_op.drop_constraint('fk_credit_report_data', type_='foreignkey')
+        batch_op.drop_constraint('fk_scrape_tasks', type_='foreignkey')
         batch_op.create_foreign_key(None, 'candidates', ['candidate_id'], ['id'])
         batch_op.drop_column('account_id')
 
