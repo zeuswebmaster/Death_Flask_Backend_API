@@ -1,7 +1,7 @@
 import enum
 from flask import current_app
 import datetime
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import UniqueConstraint, ForeignKeyConstraint
 
 from app.main import db
 from app.main.model.task import ScrapeTask
@@ -66,6 +66,7 @@ class CreditReportData(db.Model):
     credit_limit = db.Column(db.String(20), nullable=True)
     graduation = db.Column(db.String(30), nullable=True)
     last_update = db.Column(db.DateTime, nullable=True)
+    # ForeignKeyConstraint(columns=[account_id], refcolumns=['credit_report_accounts.id'], name='fk_credit_report_data')
 
     def launch_spider(self, *args, **kwargs):
         rq_job = current_app.spider_queue.enqueue(
