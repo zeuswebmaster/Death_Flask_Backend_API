@@ -1,6 +1,8 @@
 import enum
 from flask import current_app
 import datetime
+from sqlalchemy import UniqueConstraint
+
 from app.main import db
 from app.main.model.task import ScrapeTask
 
@@ -19,17 +21,19 @@ class CreditReportAccount(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     candidate_id = db.Column(db.Integer, db.ForeignKey('candidates.id'))
-    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'))
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id', name='fk_client'))
     public_id = db.Column(db.String(100), unique=True)
     provider = db.Column(db.String(50), nullable=False, default='Smart Credit')
     customer_token = db.Column(db.String(), unique=True, nullable=True)
     tracking_token = db.Column(db.String(100), nullable=False)
     plan_type = db.Column(db.String(50), nullable=True)
     financial_obligation_met = db.Column(db.Boolean, nullable=True)
-    email = db.Column(db.String(50))
+    email = db.Column(db.String(255), nullable=False)
     _password_enc = db.Column('password_enc', db.String(128), nullable=True)
     status = db.Column(db.Enum(CreditReportSignupStatus), nullable=False,
                        default=CreditReportSignupStatus.INITIATING_SIGNUP)
+    __table_args__ = (UniqueConstraint('email', name='_email_uc'),
+                      )
 
     @property
     def password(self):
@@ -44,7 +48,7 @@ class CreditReportData(db.Model):
     """ Db Model for storing candidate report data """
     __tablename__ = "credit_report_data"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    account_id = db.Column(db.Integer, db.ForeignKey('credit_report_accounts.id'))
+    account_id = db.Column(db.Integer, db.ForeignKey('credit_report_accounts.id', name='fk_credit_report_data'))
     public_id = db.Column(db.String(100), unique=True)
     debt_name = db.Column(db.String(100), nullable=True)
     creditor = db.Column(db.String(100), nullable=True)
