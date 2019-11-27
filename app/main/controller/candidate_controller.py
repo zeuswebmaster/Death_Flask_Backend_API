@@ -163,6 +163,7 @@ class CreateCreditReportAccount(Resource):
             credit_report_account = candidate.credit_report_account
             if not credit_report_account:
                 signup_data = start_signup(campaign_data)
+                signup_data['email'] = request_data.get('email')
                 credit_report_account = save_new_credit_report_account(signup_data, candidate,
                                                                        CreditReportSignupStatus.INITIATING_SIGNUP)
 
@@ -186,7 +187,6 @@ class CreateCreditReportAccount(Resource):
             new_customer = create_customer(request_data, credit_report_account.tracking_token, sponsor_code='BTX5DY2SZK')
 
             credit_report_account.password = password
-            credit_report_account.email = request_data.get('email')
             credit_report_account.customer_token = new_customer.get('customerToken')
             credit_report_account.financial_obligation_met = new_customer.get('isFinancialObligationMet')
             credit_report_account.plan_type = new_customer.get('planType')
