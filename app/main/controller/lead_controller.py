@@ -1,10 +1,10 @@
-from flask import request
+from flask import request, current_app
 from flask_restplus import Resource
-
 from app.main.model.client import ClientType
+from app.main.model.credit_report_account import CreditReportData
 from app.main.service.client_service import get_all_clients, save_new_client, get_client
 from app.main.service.credit_report_account_service import\
-    get_report_data, check_existing_scrape_task
+    get_report_data, check_existing_scrape_task, save_changes
 from ..util.dto import LeadDto, CandidateDto
 
 api = LeadDto.api
@@ -78,12 +78,6 @@ class CreditReportDebts(Resource):
                 'task_id': task.id
             }
             return resp, 200
-        except LockedException as e:
-            response_object = {
-                'success': False,
-                'message': str(e)
-            }
-            return response_object, 409
         except Exception as e:
             response_object = {
                 'success': False,

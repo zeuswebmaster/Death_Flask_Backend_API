@@ -290,3 +290,7 @@ class CandidateDto:
         'graduation': fields.String(),
         'last_update': fields.DateTime(required=True)
     })
+
+
+class TestAPIDto:
+    api = Namespace('tests', description='Test operations for Dev/QA')
