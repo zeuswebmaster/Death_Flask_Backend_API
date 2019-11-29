@@ -3,8 +3,8 @@ from flask_restplus import Resource
 from app.main.model.client import ClientType
 from app.main.model.credit_report_account import CreditReportData
 from app.main.service.client_service import get_all_clients, save_new_client, get_client
-from app.main.service.credit_report_account_service import\
-    get_report_data, check_existing_scrape_task, save_changes
+from app.main.service.credit_report_account_service import save_changes
+from app.main.service.debt_service import get_report_data, check_existing_scrape_task
 from ..util.dto import LeadDto, CandidateDto
 
 api = LeadDto.api

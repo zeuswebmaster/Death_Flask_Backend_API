@@ -15,8 +15,9 @@ from app.main.service.candidate_service import save_new_candidate_import,\
     get_all_candidates, update_candidate, save_changes
 
 from app.main.service.credit_report_account_service import\
-    save_new_credit_report_account, update_credit_report_account,\
-    get_report_data, check_existing_scrape_task
+    save_new_credit_report_account, update_credit_report_account
+
+from app.main.service.debt_service import get_report_data, check_existing_scrape_task
 
 from app.main.service.client_service import get_all_clients, save_new_client, get_client
 

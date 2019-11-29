@@ -13,8 +13,8 @@ from app.main.service.candidate_service import save_new_candidate_import, save_c
     get_candidate, get_all_candidates, update_candidate
 
 from app.main.service.credit_report_account_service import\
-    save_new_credit_report_account, update_credit_report_account,\
-    get_report_data, check_existing_scrape_task
+    save_new_credit_report_account, update_credit_report_account
+from app.main.service.debt_service import get_report_data, check_existing_scrape_task
 
 from app.main.service.smartcredit_service import start_signup, LockedException, create_customer, \
     get_id_verification_question, answer_id_verification_questions, update_customer, does_email_exist, \

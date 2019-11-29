@@ -294,3 +294,43 @@ class CandidateDto:
 
 class TestAPIDto:
     api = Namespace('tests', description='Test operations for Dev/QA')
+
+
+class DebtDto:
+    api = Namespace('debts', description='Debt related operations')
+    credit_report_data = api.model('credit_report_account', {
+        'public_id': fields.String(),
+        'debt_name': fields.String(),
+        'creditor': fields.String(),
+        'ecoa': fields.String(),
+        'account_number': fields.String(),
+        'account_type': fields.String(),
+        'push': fields.Boolean(),
+        'last_collector': fields.String(),
+        'collector_account': fields.String(),
+        'last_debt_status': fields.Integer(),
+        'bureaus': fields.DateTime(),
+        'days_delinquent': fields.String(),
+        'balance_original': fields.String(),
+        'payment_amount': fields.String(),
+        'credit_limit': fields.String(),
+        'graduation': fields.String(),
+        'last_update': fields.DateTime(required=True)
+    })
+    new_report_data = api.model('new_report_data', {
+        'debt_name': fields.String(),
+        'creditor': fields.String(),
+        'ecoa': fields.String(),
+        'account_number': fields.String(),
+        'account_type': fields.String(),
+        'push': fields.Boolean(),
+        'last_collector': fields.String(),
+        'collector_account': fields.String(),
+        'last_debt_status': fields.Integer(),
+        'bureaus': fields.DateTime(),
+        'days_delinquent': fields.String(),
+        'balance_original': fields.String(),
+        'payment_amount': fields.String(),
+        'credit_limit': fields.String(),
+        'graduation': fields.String(),
+    })
